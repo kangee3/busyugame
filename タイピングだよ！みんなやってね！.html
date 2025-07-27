@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8" />
+<title>部首タイピング - ひらがな対応</title>
+<style>
+  body {
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    background-color: #f0f8ff;
+  }
+  .container {
+    background-color: #ffffff;
+    padding: 30px 40px;
+    border-radius: 15px;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    text-align: center;
+    max-width: 500px;
+    width: 90%;
+  }
+  h1 { margin-bottom: 20px; font-size: 2.2em; color:#333; }
+  p { margin-bottom: 20px; font-size: 1.1em; color:#555; }
+  #radical-display { min-height: 120px; display:flex; justify-content:center; align-items: center; background-color: #e6f7ff; border-radius:10px; padding:20px; margin-bottom:20px; }
+  #radical-text { font-size:5em; font-weight:bold; color:#007bff; }
+  #typing-input { width: calc(100% - 40px); padding: 15px 20px; font-size: 1.5em; border: 2px solid #ccc; border-radius: 8px; margin-bottom: 20px; outline: none; }
+  #feedback { font-size:1.3em; font-weight:bold; margin-bottom:20px; min-height:1.5em; }
+  .correct { color:#28a745; }
+  .incorrect { color:#dc3545; }
+  #next-button { background-color:#007bff; color:#fff; padding:12px 25px; border:none; border-radius:8px; font-size:1.2em; cursor:pointer; display:none; }
+  #next-button:hover { background-color:#0056b3; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>部首タイピング</h1>
+<p>表示された部首のローマ字またはひらがなをタイピングしてEnter！</p>
+
+<div id="radical-display">
+  <span id="radical-text"></span>
+</div>
+
+<input type="text" id="typing-input" placeholder="ローマ字またはひらがな" autofocus>
+
+<div id="feedback"></div>
+
+<button id="next-button">次の問題へ</button>
+</div>
+
+<script>
+const radicalData = [
+    { name: "にんべん", romaji: "ninben", kana: "にんべん", radical: "イ" },
+    { name: "さんずい", romaji: "sanzui", kana: "さんずい", radical: "氵" },
+    { name: "くさかんむり", romaji: "kusakanmuri", kana: "くさかんむり", radical: "艹" },
+    { name: "てへん", romaji: "tehen", kana: "てへん", radical: "扌" },
+    { name: "ごんべん", romaji: "gonben", kana: "ごんべん", radical: "言" },
+    { name: "りっしんべん", romaji: "risshinben", kana: "りっしんべん", radical: "忄" },
+    { name: "かねへん", romaji: "kanehen", kana: "かねへん", radical: "钅" },
+    { name: "うかんむり", romaji: "ukanmuri", kana: "うかんむり", radical: "宀" },
+    { name: "しめすへん", romaji: "shimesuhen", kana: "しめすへん", radical: "礻" },
+    { name: "こざとへん", romaji: "kozatohen", kana: "こざとへん", radical: "阝" },
+    { name: "おおざと", romaji: "oozato", kana: "おおざと", radical: "阝" },
+    { name: "こめへん", romaji: "komehen", kana: "こめへん", radical: "米" },
+    { name: "きのへん", romaji: "kinohen", kana: "きのへん", radical: "木" },
+    { name: "おおがい", romaji: "oogai", kana: "おおがい", radical: "頁" },
+    { name: "もんがまえ", romaji: "mongamae", kana: "もんがまえ", radical: "門" },
+    // 追加例：
+    { name: "いとへん", romaji: "itohen", kana: "いとへん", radical: "糸" },
+    { name: "つちへん", romaji: "tsuchihen", kana: "つちへん", radical: "土" },
+    { name:"ひへん", romaji:"hihen", kana:"ひへん", radical:"比" },
+    { name:"ひとやね", romaji:"hitoyane", kana:"ひとやね", radical:"尸" },
+    //ここから追加2
+    { name: "あしへん", romaji: "ashihen", kana: "あしへん", radical: "足" },
+    { name: "あくび", romaji: "akubi", kana: "あくび", radical: "欠" },
+    { name: "したごころ", romaji: "shitagokoro", kana: "したごころ", radical: "心" },
+    { name: "つきへん", romaji: "tsukihen", kana: "つきへん", radical: "月" },
+    { name: "やまへん", romaji: "yamahen", kana: "やまへん", radical: "山" },
+    { name: "ひへん（火）", romaji: "hihen2", kana: "ひへん", radical: "火" },
+    { name: "にくづき", romaji: "nikuzuki", kana: "にくづき", radical: "⺼" },
+    { name: "たまへん", romaji: "tamahan", kana: "たまへん", radical: "王" }, 
+    { name: "ひらび", romaji: "hirabi", kana: "ひらび", radical: "日" },
+    { name: "あなかんむり", romaji: "anakanmuri", kana: "あなかんむり", radical: "穴" },
+    { name: "ころもへん", romaji: "koromohen", kana: "ころもへん", radical: "衤" },
+    { name: "かたへん", romaji: "katahen", kana: "かたへん", radical: "片" },
+    { name: "したへん", romaji: "shitahen", kana: "したへん", radical: "下" },
+    { name: "まげあし", romaji: "mageashi", kana: "まげあし", radical: "夂" },
+    { name: "くにがまえ", romaji: "kunigamae", kana: "くにがまえ", radical: "囗" },
+    { name: "やまかんむり", romaji: "yamakammuri", kana: "やまかんむり", radical: "山" },
+    { name: "れっか", romaji: "rekka", kana: "れっか", radical: "灬" },
+    { name: "ほこづくり", romaji: "hokozukuri", kana: "ほこづくり", radical: "攵" },
+    { name: "りっとう", romaji: "rittou", kana: "りっとう", radical: "刂" },
+    { name: "しんにょう", romaji: "shinnyou", kana: "しんにょう", radical: "⻌" },
+    { name: "ふるとり",romaji:"hurutori",kana:"ふるとり",radical:"隹"}
+];
+
+let currentRadical = null;
+
+const radicalText = document.getElementById('radical-text');
+const typingInput = document.getElementById('typing-input');
+const feedbackDiv = document.getElementById('feedback');
+const nextBtn = document.getElementById('next-button');
+
+let answeredCorrectly = false;
+
+function displayRadical() {
+  feedbackDiv.innerHTML = '';
+  nextBtn.style.display='none';
+  answeredCorrectly=false;
+
+  const index = Math.floor(Math.random() * radicalData.length);
+  currentRadical = radicalData[index];
+
+  radicalText.innerText = currentRadical.radical;
+  typingInput.value = '';
+  typingInput.disabled = false;
+  typingInput.focus();
+}
+
+document.getElementById('typing-input').addEventListener('keydown', ()=> {
+  if(event.key==='Enter') {
+    if(answeredCorrectly){  
+      displayRadical();
+      return;
+    }
+    const typed=typingInput.value.trim().toLowerCase();
+    const isCorrectRomaji=typed===currentRadical.romaji.toLowerCase();
+    const isCorrectKana=typed===currentRadical.kana;
+
+    if(isCorrectRomaji || isCorrectKana){
+      feedbackDiv.innerHTML='正解！🎉';
+      feedbackDiv.className='correct';
+      answeredCorrectly=true;
+      nextBtn.style.display='inline-block';
+    } else {
+      feedbackDiv.innerHTML='間違えた！答えは：' + currentRadical.romaji + '（' + currentRadical.kana + '）';
+      feedbackDiv.className='incorrect';
+    }
+  }
+});
+
+document.getElementById('next-button').onclick=()=> {
+  displayRadical();
+}
+
+displayRadical();
+</script>
+</body>
+</html>
